@@ -74,7 +74,7 @@ public class ZWavePlugin extends AbstractHobsonPlugin implements StateContext, Z
     @Override
     protected TypedProperty[] createSupportedProperties() {
         return new TypedProperty[] {
-            new TypedProperty.Builder("serial.port", "Serial Port", "The serial port containing the Z-Wave controller (e.g. /dev/tty.SLAB_USBtoUART)", TypedProperty.Type.STRING).build()
+            new TypedProperty.Builder("serial.port", "Serial Port", "The serial port containing the Z-Wave controller (e.g. /dev/tty.SLAB_USBtoUART)", TypedProperty.Type.SERIAL_PORT).build()
         };
     }
 

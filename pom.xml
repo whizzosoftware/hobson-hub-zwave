@@ -61,7 +61,7 @@
         <dependency>
             <groupId>com.whizzosoftware.hobson.hub</groupId>
             <artifactId>hobson-hub-api</artifactId>
-            <version>0.8.0</version>
+            <version>0.8.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -132,7 +132,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Import-Package>org.slf4j,io.netty.*,org.apache.commons.*,com.whizzosoftware.hobson.bootstrap.api.*,com.whizzosoftware.hobson.api.*;version="[0.8.0,0.9)",com.whizzosoftware.wzwave.*</Import-Package>
+                        <Import-Package>org.slf4j,io.netty.*,org.apache.commons.*,com.whizzosoftware.hobson.bootstrap.api.*,com.whizzosoftware.hobson.api.*;version="[0.8.1,0.9)",com.whizzosoftware.wzwave.*</Import-Package>
                         <Bundle-Activator>com.whizzosoftware.hobson.api.osgi.activator.HobsonBundleActivator</Bundle-Activator>
                         <Embed-Dependency>wzwave;scope=compile|runtime</Embed-Dependency>
                         <Provide-Capability>hobson.plugin=com.whizzosoftware.hobson.zwave.ZWavePlugin</Provide-Capability>
