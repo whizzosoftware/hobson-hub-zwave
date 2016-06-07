@@ -134,6 +134,11 @@ public class ZWavePlugin extends AbstractHobsonPlugin implements StateContext, Z
         logger.error("Error connecting to Z-Wave controler", t);
     }
 
+    @Override
+    public void onZWaveControllerInfo(String libraryVersion, Integer homeId, Byte nodeId) {
+        logger.info("Z-Wave controller info: library version: {}, home ID: {}, node ID: {}", libraryVersion, homeId, nodeId);
+    }
+
     // ***
     // StateContext methods
     // ***

@@ -16,6 +16,7 @@ import com.whizzosoftware.hobson.api.variable.VariableContext;
 import com.whizzosoftware.hobson.api.variable.VariableUpdate;
 import com.whizzosoftware.hobson.zwave.ZWavePlugin;
 import com.whizzosoftware.wzwave.commandclass.BinarySwitchCommandClass;
+import com.whizzosoftware.wzwave.commandclass.MeterCommandClass;
 import com.whizzosoftware.wzwave.commandclass.MultiInstanceCommandClass;
 import com.whizzosoftware.wzwave.node.ZWaveEndpoint;
 import com.whizzosoftware.wzwave.node.generic.BinarySwitch;
@@ -32,14 +33,20 @@ import java.util.List;
 public class SwitchDevice extends HobsonZWaveDevice {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
+    private boolean hasMeter = false;
+
     public SwitchDevice(ZWavePlugin zwavePlugin, String id, ZWaveEndpoint node, Byte endpointNumber, String name) {
         super(zwavePlugin, id, node.getNodeId(), endpointNumber);
         setDefaultName(createManufacturerDeviceName(node, name != null ? name : "Unknown Switch"));
+        hasMeter = node.hasCommandClass(MeterCommandClass.ID);
     }
 
     @Override
     public void onStartup(PropertyContainer config) {
         publishVariable(VariableConstants.ON, getInitialValue(VariableConstants.ON), HobsonVariable.Mask.READ_WRITE, getInitialValueUpdateTime(VariableConstants.ON));
+        if (hasMeter) {
+            publishVariable(VariableConstants.ENERGY_CONSUMPTION_WATTS, getInitialValue(VariableConstants.ENERGY_CONSUMPTION_WATTS), HobsonVariable.Mask.READ_ONLY, getInitialValueUpdateTime(VariableConstants.ENERGY_CONSUMPTION_WATTS));
+        }
         super.onStartup(config);
     }
 
@@ -49,11 +56,19 @@ public class SwitchDevice extends HobsonZWaveDevice {
     @Override
     public void onUpdate(ZWaveEndpoint endpoint, List<VariableUpdate> updates) {
         logger.debug("Got Z-Wave device update: " + endpoint);
+
+        // update on/off
         if (endpoint.getGenericDeviceClass() == BinarySwitch.ID) {
             Boolean isOn = BinarySwitch.isOn(endpoint);
             if (isOn != null) {
                 updates.add(new VariableUpdate(VariableContext.create(getContext(), VariableConstants.ON), isOn));
             }
+        }
+
+        // if the device supports a meter, update it's energy consumption in watts
+        if (hasMeter) {
+            MeterCommandClass mcc = (MeterCommandClass)endpoint.getCommandClass(MeterCommandClass.ID);
+            updates.add(new VariableUpdate(VariableContext.create(getContext(), VariableConstants.ENERGY_CONSUMPTION_WATTS), mcc.getCurrentValue()));
         }
     }
 
