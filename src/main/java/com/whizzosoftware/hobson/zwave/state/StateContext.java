@@ -28,6 +28,6 @@ public interface StateContext extends ZWaveControllerListener {
     void setPluginStatus(PluginStatus status);
     void setState(State state);
     HobsonDevice getZWaveDevice(String deviceId);
-    void createZWaveDevice(Class clazz, ZWaveEndpoint endpoint, Byte endpointNumber, String name);
+    void createZWaveDevice(Class clazz, ZWaveEndpoint endpoint, Byte endpointNumber, String name, String primaryVariable);
     void fireVariableUpdateNotifications(List<VariableUpdate> updates);
 }

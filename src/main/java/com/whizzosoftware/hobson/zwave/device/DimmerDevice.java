@@ -32,7 +32,7 @@ public class DimmerDevice extends HobsonZWaveDevice {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     public DimmerDevice(ZWavePlugin zwavePlugin, String id, ZWaveEndpoint node, Byte endpointNumber, String name) {
-        super(zwavePlugin, id, node.getNodeId(), endpointNumber);
+        super(zwavePlugin, id, node, endpointNumber);
         setDefaultName(createManufacturerDeviceName(node, name != null ? name : "Unknown Dimmer"));
     }
 
@@ -75,10 +75,11 @@ public class DimmerDevice extends HobsonZWaveDevice {
 
     @Override
     public void onSetVariable(String name, Object value) {
+        MultilevelSwitchCommandClass mscc = (MultilevelSwitchCommandClass)getEndpoint().getCommandClass(MultilevelSwitchCommandClass.ID);
         if (VariableConstants.LEVEL.equals(name)) {
             Byte level = Byte.parseByte(value.toString());
-            getZWaveDriver().getZWaveController().sendDataFrame(MultilevelSwitchCommandClass.createSetv1(getNodeId(), level));
-            getZWaveDriver().getZWaveController().sendDataFrame(MultilevelSwitchCommandClass.createGetv1(getNodeId()));
+            getZWaveDriver().getZWaveController().sendDataFrame(mscc.createSet(getNodeId(), level));
+            getZWaveDriver().getZWaveController().sendDataFrame(mscc.createGet(getNodeId()));
         }
     }
 }

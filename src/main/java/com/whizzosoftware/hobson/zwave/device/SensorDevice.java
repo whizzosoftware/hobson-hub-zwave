@@ -14,9 +14,12 @@ import com.whizzosoftware.hobson.api.variable.HobsonVariable;
 import com.whizzosoftware.hobson.api.variable.VariableConstants;
 import com.whizzosoftware.hobson.api.variable.VariableContext;
 import com.whizzosoftware.hobson.api.variable.VariableUpdate;
+import com.whizzosoftware.hobson.zwave.ZWaveContext;
 import com.whizzosoftware.hobson.zwave.ZWavePlugin;
+import com.whizzosoftware.wzwave.commandclass.MeterCommandClass;
 import com.whizzosoftware.wzwave.node.ZWaveEndpoint;
 import com.whizzosoftware.wzwave.node.generic.BinarySensor;
+import com.whizzosoftware.wzwave.node.generic.Meter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,15 +33,25 @@ import java.util.List;
 public class SensorDevice extends HobsonZWaveDevice {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public SensorDevice(ZWavePlugin driver, String id, ZWaveEndpoint node, Byte endpointNumber, String name) {
-        super(driver, id, node.getNodeId(), endpointNumber);
+    public SensorDevice(ZWavePlugin plugin, String id, ZWaveEndpoint node, Byte endpointNumber, String name) {
+        super(plugin, id, node, endpointNumber);
         setDefaultName(createManufacturerDeviceName(node, name != null ? name : "Unknown Sensor"));
     }
 
     @Override
     public void onStartup(PropertyContainer config) {
-        publishVariable(VariableConstants.ON, getInitialValue(VariableConstants.ON), HobsonVariable.Mask.READ_ONLY, getInitialValueUpdateTime(VariableConstants.ON));
+        publishVariable(getPrimaryVariable(), getInitialValue(getPrimaryVariable()), HobsonVariable.Mask.READ_ONLY, getInitialValueUpdateTime(getPrimaryVariable()));
         super.onStartup(config);
+    }
+
+    @Override
+    public void onRefresh(ZWaveContext ctx) {
+        if (getEndpoint() instanceof Meter) {
+            MeterCommandClass mcc = (MeterCommandClass)getEndpoint().getCommandClass(MeterCommandClass.ID);
+            if (mcc.getMeterType() == MeterCommandClass.MeterType.Electric) {
+                ctx.sendDataFrame(mcc.createGet(getNodeId(), MeterCommandClass.SCALE_ELECTRIC_W));
+            }
+        }
     }
 
     @Override
@@ -50,12 +63,20 @@ public class SensorDevice extends HobsonZWaveDevice {
         if (endpoint instanceof BinarySensor) {
             BinarySensor sensor = (BinarySensor)endpoint;
             updates.add(new VariableUpdate(VariableContext.create(getContext(), VariableConstants.ON), !sensor.isSensorIdle()));
+        } else if (endpoint instanceof Meter && hasPrimaryVariable()) {
+            Meter meter = (Meter)endpoint;
+            if (meter.hasCommandClass(MeterCommandClass.ID)) {
+                MeterCommandClass mcc = (MeterCommandClass)meter.getCommandClass(MeterCommandClass.ID);
+                updates.add(new VariableUpdate(VariableContext.create(getContext(), getPrimaryVariable()), mcc.getCurrentValue()));
+            }
+        } else {
+            logger.debug("Ignoring update for endpoint: {}", endpoint);
         }
     }
 
     @Override
     public String getPreferredVariableName() {
-        return VariableConstants.ON;
+        return getPrimaryVariable();
     }
 
     @Override

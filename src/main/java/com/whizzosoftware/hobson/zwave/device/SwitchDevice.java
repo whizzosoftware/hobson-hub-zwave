@@ -36,7 +36,7 @@ public class SwitchDevice extends HobsonZWaveDevice {
     private boolean hasMeter = false;
 
     public SwitchDevice(ZWavePlugin zwavePlugin, String id, ZWaveEndpoint node, Byte endpointNumber, String name) {
-        super(zwavePlugin, id, node.getNodeId(), endpointNumber);
+        super(zwavePlugin, id, node, endpointNumber);
         setDefaultName(createManufacturerDeviceName(node, name != null ? name : "Unknown Switch"));
         hasMeter = node.hasCommandClass(MeterCommandClass.ID);
     }
@@ -89,6 +89,7 @@ public class SwitchDevice extends HobsonZWaveDevice {
 
     @Override
     public void onSetVariable(String name, Object value) {
+        BinarySwitchCommandClass bscc = (BinarySwitchCommandClass)getEndpoint().getCommandClass(BinarySwitchCommandClass.ID);
         if (VariableConstants.ON.equals(name) && ("true".equals(value) || value.equals(true))) {
             logger.debug("Sending switch on to " + getContext());
             if (isEndpoint()) {
@@ -96,7 +97,7 @@ public class SwitchDevice extends HobsonZWaveDevice {
                     MultiInstanceCommandClass.createMultiChannelCmdEncapv2(
                         (byte)0,
                         getEndpointNumber(),
-                        BinarySwitchCommandClass.createSetv1(getNodeId(), true),
+                            bscc.createSet(getNodeId(), true),
                         false
                     )
                 );
@@ -104,13 +105,13 @@ public class SwitchDevice extends HobsonZWaveDevice {
                     MultiInstanceCommandClass.createMultiChannelCmdEncapv2(
                         (byte)0,
                         getEndpointNumber(),
-                        BinarySwitchCommandClass.createGetv1(getNodeId()),
+                            bscc.createGet(getNodeId()),
                         false
                     )
                 );
             } else {
-                getZWaveDriver().getZWaveController().sendDataFrame(BinarySwitchCommandClass.createSetv1(getNodeId(), true));
-                getZWaveDriver().getZWaveController().sendDataFrame(BinarySwitchCommandClass.createGetv1(getNodeId()));
+                getZWaveDriver().getZWaveController().sendDataFrame(bscc.createSet(getNodeId(), true));
+                getZWaveDriver().getZWaveController().sendDataFrame(bscc.createGet(getNodeId()));
             }
         } else if (VariableConstants.ON.equals(name) && ("false".equals(value) || value.equals(false))) {
             logger.debug("Sending switch off to " + getContext());
@@ -119,7 +120,7 @@ public class SwitchDevice extends HobsonZWaveDevice {
                     MultiInstanceCommandClass.createMultiChannelCmdEncapv2(
                         (byte)0,
                         getEndpointNumber(),
-                        BinarySwitchCommandClass.createSetv1(getNodeId(), false),
+                        bscc.createSet(getNodeId(), false),
                         false
                     )
                 );
@@ -127,13 +128,13 @@ public class SwitchDevice extends HobsonZWaveDevice {
                     MultiInstanceCommandClass.createMultiChannelCmdEncapv2(
                         (byte)0,
                         getEndpointNumber(),
-                        BinarySwitchCommandClass.createGetv1(getNodeId()),
+                        bscc.createGet(getNodeId()),
                         false
                     )
                 );
             } else {
-                getZWaveDriver().getZWaveController().sendDataFrame(BinarySwitchCommandClass.createSetv1(getNodeId(), false));
-                getZWaveDriver().getZWaveController().sendDataFrame(BinarySwitchCommandClass.createGetv1(getNodeId()));
+                getZWaveDriver().getZWaveController().sendDataFrame(bscc.createSet(getNodeId(), false));
+                getZWaveDriver().getZWaveController().sendDataFrame(bscc.createGet(getNodeId()));
             }
         }
     }

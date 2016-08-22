@@ -42,7 +42,7 @@ public class HobsonZWaveDeviceTest {
 
     private static class MockZWaveDevice extends HobsonZWaveDevice {
         public MockZWaveDevice(ZWavePlugin driver, String id, byte nodeId, Byte endpointNumber) {
-            super(driver, id, nodeId, endpointNumber);
+            super(driver, id, new MockZWaveEndpoint(nodeId, null, null), endpointNumber);
         }
 
         @Override
@@ -65,6 +65,12 @@ public class HobsonZWaveDeviceTest {
 
         @Override
         public void onSetVariable(String s, Object o) {
+        }
+    }
+
+    private static class MockZWaveEndpoint extends ZWaveEndpoint {
+        public MockZWaveEndpoint(byte nodeId, Byte genericDeviceClass, Byte specificDeviceClass) {
+            super(nodeId, genericDeviceClass, specificDeviceClass);
         }
     }
 }

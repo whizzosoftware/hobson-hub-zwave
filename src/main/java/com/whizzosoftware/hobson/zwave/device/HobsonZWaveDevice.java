@@ -10,6 +10,7 @@ package com.whizzosoftware.hobson.zwave.device;
 import com.whizzosoftware.hobson.api.device.AbstractHobsonDevice;
 import com.whizzosoftware.hobson.api.property.PropertyContainer;
 import com.whizzosoftware.hobson.api.variable.VariableUpdate;
+import com.whizzosoftware.hobson.zwave.ZWaveContext;
 import com.whizzosoftware.hobson.zwave.ZWavePlugin;
 import com.whizzosoftware.wzwave.commandclass.ManufacturerSpecificCommandClass;
 import com.whizzosoftware.wzwave.node.ZWaveEndpoint;
@@ -24,13 +25,14 @@ import java.util.Map;
  * @author Dan Noguerol
  */
 abstract public class HobsonZWaveDevice extends AbstractHobsonDevice {
-    private byte nodeId;
+    private ZWaveEndpoint endpoint;
     private Byte endpointNumber;
+    private String primaryVariable;
     private Map<String,Object> initialValues;
 
-    public HobsonZWaveDevice(ZWavePlugin driver, String id, byte nodeId, Byte endpointNumber) {
+    public HobsonZWaveDevice(ZWavePlugin driver, String id, ZWaveEndpoint endpoint, Byte endpointNumber) {
         super(driver, id);
-        this.nodeId = nodeId;
+        this.endpoint = endpoint;
         this.endpointNumber = endpointNumber;
     }
 
@@ -40,8 +42,28 @@ abstract public class HobsonZWaveDevice extends AbstractHobsonDevice {
         clearInitialValues();
     }
 
+    public void onRefresh(ZWaveContext ctx) {
+        // NO-OP
+    }
+
+    protected ZWaveEndpoint getEndpoint() {
+        return endpoint;
+    }
+
+    public boolean hasPrimaryVariable() {
+        return (primaryVariable != null);
+    }
+
+    public String getPrimaryVariable() {
+        return primaryVariable;
+    }
+
+    public void setPrimaryVariable(String primaryVariable) {
+        this.primaryVariable = primaryVariable;
+    }
+
     public byte getNodeId() {
-        return nodeId;
+        return endpoint.getNodeId();
     }
 
     public Byte getEndpointNumber() {
