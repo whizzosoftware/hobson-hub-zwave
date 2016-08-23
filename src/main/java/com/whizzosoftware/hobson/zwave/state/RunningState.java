@@ -1,10 +1,12 @@
-/*******************************************************************************
+/*
+ *******************************************************************************
  * Copyright (c) 2014 Whizzo Software, LLC.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *******************************************************************************/
+ *******************************************************************************
+*/
 package com.whizzosoftware.hobson.zwave.state;
 
 import com.whizzosoftware.hobson.api.device.HobsonDevice;
@@ -20,7 +22,6 @@ import com.whizzosoftware.wzwave.node.ZWaveMultiChannelEndpoint;
 import com.whizzosoftware.wzwave.node.generic.*;
 import com.whizzosoftware.wzwave.node.specific.PCController;
 import com.whizzosoftware.wzwave.node.specific.RoutingBinarySensor;
-import com.whizzosoftware.wzwave.node.specific.SimpleMeter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,22 +50,22 @@ public class RunningState implements State {
     public void onZWaveNodeAdded(StateContext context, ZWaveEndpoint node) {
         if (node instanceof AlarmSensor) {
             logger.debug("Adding Alarm sensor");
-            context.createZWaveDevice(SensorDevice.class, node, null, "Alarm Sensor", null);
+            context.createZWaveDevice(SensorDevice.class, node, "Alarm Sensor", null);
         } else if (node instanceof RoutingBinarySensor) {
             logger.debug("Adding Battery-powered Sensor device");
-            context.createZWaveDevice(BatterySensorDevice.class, node, null, null, null);
+            context.createZWaveDevice(BatterySensorDevice.class, node, null, null);
         } else if (node instanceof BinarySensor) {
             logger.debug("Adding Sensor device");
-            context.createZWaveDevice(SensorDevice.class, node, null, null, null);
+            context.createZWaveDevice(SensorDevice.class, node, null, null);
         } else if (node instanceof BinarySwitch) {
             logger.debug("Adding Switch device");
-            context.createZWaveDevice(SwitchDevice.class, node, null, null, null);
+            context.createZWaveDevice(SwitchDevice.class, node, null, null);
         } else if (node instanceof Meter) {
             logger.debug("Adding Meter device");
             MeterCommandClass mcc = (MeterCommandClass)node.getCommandClass(MeterCommandClass.ID);
             switch (mcc.getMeterType()) {
                 case Electric:
-                    context.createZWaveDevice(SensorDevice.class, node, null, null, VariableConstants.ENERGY_CONSUMPTION_WATTS);
+                    context.createZWaveDevice(SensorDevice.class, node, null, VariableConstants.ENERGY_CONSUMPTION_WATTS);
                     break;
                 default:
                     logger.warn("Ignoring unsupported meter type: " + mcc.getMeterType());
@@ -72,7 +73,7 @@ public class RunningState implements State {
             }
         } else if (node instanceof MultilevelSwitch) {
             logger.debug("Adding Dimmer device");
-            context.createZWaveDevice(DimmerDevice.class, node, null, null, null);
+            context.createZWaveDevice(DimmerDevice.class, node, null, null);
         } else if (node instanceof PCController) {
             logger.debug("Ignoring PC Controller");
         } else {

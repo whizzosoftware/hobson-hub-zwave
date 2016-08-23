@@ -9,10 +9,10 @@ package com.whizzosoftware.hobson.zwave.device;
 
 import com.whizzosoftware.hobson.api.device.DeviceType;
 import com.whizzosoftware.hobson.api.device.MockDeviceManager;
-import com.whizzosoftware.hobson.api.plugin.MockHobsonPlugin;
 import com.whizzosoftware.hobson.api.property.TypedProperty;
 import com.whizzosoftware.hobson.api.variable.VariableContext;
 import com.whizzosoftware.hobson.api.variable.VariableUpdate;
+import com.whizzosoftware.hobson.zwave.ZWaveContext;
 import com.whizzosoftware.hobson.zwave.ZWavePlugin;
 import com.whizzosoftware.wzwave.node.ZWaveEndpoint;
 import org.junit.Test;
@@ -42,7 +42,7 @@ public class HobsonZWaveDeviceTest {
 
     private static class MockZWaveDevice extends HobsonZWaveDevice {
         public MockZWaveDevice(ZWavePlugin driver, String id, byte nodeId, Byte endpointNumber) {
-            super(driver, id, new MockZWaveEndpoint(nodeId, null, null), endpointNumber);
+            super(driver, id, new MockZWaveEndpoint(nodeId, null, null), endpointNumber, null);
         }
 
         @Override

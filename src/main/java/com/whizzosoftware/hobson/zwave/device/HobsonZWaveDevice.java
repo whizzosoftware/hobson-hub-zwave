@@ -1,10 +1,12 @@
-/*******************************************************************************
+/*
+ *******************************************************************************
  * Copyright (c) 2014 Whizzo Software, LLC.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *******************************************************************************/
+ *******************************************************************************
+*/
 package com.whizzosoftware.hobson.zwave.device;
 
 import com.whizzosoftware.hobson.api.device.AbstractHobsonDevice;
@@ -13,6 +15,7 @@ import com.whizzosoftware.hobson.api.variable.VariableUpdate;
 import com.whizzosoftware.hobson.zwave.ZWaveContext;
 import com.whizzosoftware.hobson.zwave.ZWavePlugin;
 import com.whizzosoftware.wzwave.commandclass.ManufacturerSpecificCommandClass;
+import com.whizzosoftware.wzwave.commandclass.MultiInstanceCommandClass;
 import com.whizzosoftware.wzwave.node.ZWaveEndpoint;
 
 import java.util.HashMap;
@@ -29,11 +32,13 @@ abstract public class HobsonZWaveDevice extends AbstractHobsonDevice {
     private Byte endpointNumber;
     private String primaryVariable;
     private Map<String,Object> initialValues;
+    private MultiInstanceCommandClass micc;
 
-    public HobsonZWaveDevice(ZWavePlugin driver, String id, ZWaveEndpoint endpoint, Byte endpointNumber) {
+    public HobsonZWaveDevice(ZWavePlugin driver, String id, ZWaveEndpoint endpoint, Byte endpointNumber, MultiInstanceCommandClass micc) {
         super(driver, id);
         this.endpoint = endpoint;
         this.endpointNumber = endpointNumber;
+        this.micc = micc;
     }
 
     @Override
@@ -48,6 +53,10 @@ abstract public class HobsonZWaveDevice extends AbstractHobsonDevice {
 
     protected ZWaveEndpoint getEndpoint() {
         return endpoint;
+    }
+
+    protected MultiInstanceCommandClass getMultiInstanceCommandClass() {
+        return micc;
     }
 
     public boolean hasPrimaryVariable() {

@@ -1,10 +1,12 @@
-/*******************************************************************************
+/*
+ *******************************************************************************
  * Copyright (c) 2014 Whizzo Software, LLC.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *******************************************************************************/
+ *******************************************************************************
+*/
 package com.whizzosoftware.hobson.zwave.device;
 
 import com.whizzosoftware.hobson.api.device.DeviceType;
@@ -17,6 +19,7 @@ import com.whizzosoftware.hobson.api.variable.VariableUpdate;
 import com.whizzosoftware.hobson.zwave.ZWaveContext;
 import com.whizzosoftware.hobson.zwave.ZWavePlugin;
 import com.whizzosoftware.wzwave.commandclass.MeterCommandClass;
+import com.whizzosoftware.wzwave.commandclass.MultiInstanceCommandClass;
 import com.whizzosoftware.wzwave.node.ZWaveEndpoint;
 import com.whizzosoftware.wzwave.node.generic.BinarySensor;
 import com.whizzosoftware.wzwave.node.generic.Meter;
@@ -33,8 +36,8 @@ import java.util.List;
 public class SensorDevice extends HobsonZWaveDevice {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public SensorDevice(ZWavePlugin plugin, String id, ZWaveEndpoint node, Byte endpointNumber, String name) {
-        super(plugin, id, node, endpointNumber);
+    public SensorDevice(ZWavePlugin plugin, String id, ZWaveEndpoint node, String name, Byte endpointNumber, MultiInstanceCommandClass micc) {
+        super(plugin, id, node, endpointNumber, micc);
         setDefaultName(createManufacturerDeviceName(node, name != null ? name : "Unknown Sensor"));
     }
 
@@ -59,7 +62,7 @@ public class SensorDevice extends HobsonZWaveDevice {
 
     @Override
     public void onUpdate(ZWaveEndpoint endpoint, List<VariableUpdate> updates) {
-        logger.debug("Got Z-Wave device update: " + endpoint);
+        logger.debug("Got Z-Wave device update for {}: {}", endpoint, updates);
         if (endpoint instanceof BinarySensor) {
             BinarySensor sensor = (BinarySensor)endpoint;
             updates.add(new VariableUpdate(VariableContext.create(getContext(), VariableConstants.ON), !sensor.isSensorIdle()));

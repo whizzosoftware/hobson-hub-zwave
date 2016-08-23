@@ -1,10 +1,12 @@
-/*******************************************************************************
+/*
+ *******************************************************************************
  * Copyright (c) 2014 Whizzo Software, LLC.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *******************************************************************************/
+ *******************************************************************************
+*/
 package com.whizzosoftware.hobson.zwave;
 
 import com.whizzosoftware.hobson.api.device.DeviceContext;
@@ -219,7 +221,12 @@ public class ZWavePlugin extends AbstractHobsonPlugin implements StateContext, Z
     }
 
     @Override
-    public void createZWaveDevice(Class clazz, ZWaveEndpoint node, Byte endpointNumber, String name, String primaryVariable) {
+    public void createZWaveDevice(Class clazz, ZWaveEndpoint node, String name, String primaryVariable) {
+        createZWaveDevice(clazz, node, name, primaryVariable, null, null);
+    }
+
+    @Override
+    public void createZWaveDevice(Class clazz, ZWaveEndpoint node, String name, String primaryVariable, Byte endpointNumber, MultiInstanceCommandClass micc) {
         String deviceId;
 
         if (endpointNumber != null) {
@@ -230,8 +237,8 @@ public class ZWavePlugin extends AbstractHobsonPlugin implements StateContext, Z
 
         try {
             // instantiate the device
-            Constructor c = clazz.getConstructor(ZWavePlugin.class, String.class, ZWaveEndpoint.class, Byte.class, String.class);
-            HobsonZWaveDevice device = (HobsonZWaveDevice)c.newInstance(this, deviceId, node, endpointNumber, name);
+            Constructor c = clazz.getConstructor(ZWavePlugin.class, String.class, ZWaveEndpoint.class, String.class, Byte.class, MultiInstanceCommandClass.class);
+            HobsonZWaveDevice device = (HobsonZWaveDevice)c.newInstance(this, deviceId, node, name, endpointNumber, micc);
             device.setPrimaryVariable(primaryVariable);
 
             // publish the device
@@ -239,20 +246,22 @@ public class ZWavePlugin extends AbstractHobsonPlugin implements StateContext, Z
             publishDevice(device);
 
             // check to see if device has any endpoints -- add devices for any that are recognized
-            MultiInstanceCommandClass micc = (MultiInstanceCommandClass)node.getCommandClass(MultiInstanceCommandClass.ID);
-            if (micc != null) {
-                logger.debug("Found Z-Wave device with {} endpoints", micc.getEndpoints().size());
-                for (ZWaveMultiChannelEndpoint ep : micc.getEndpoints()) {
-                    switch (ep.getGenericDeviceClass()) {
-                        case ZWaveMultiChannelEndpoint.BINARY_SWITCH:
-                            createZWaveDevice(SwitchDevice.class, ep, ep.getNumber(), null, null);
-                            break;
-                        case ZWaveMultiChannelEndpoint.MULTI_LEVEL_SWITCH:
-                            createZWaveDevice(DimmerDevice.class, ep, ep.getNumber(), null, null);
-                            break;
-                        default:
-                            logger.warn("Unsupported Z-Wave endpoint found: " + ep);
-                            break;
+            if (micc == null) {
+                micc = (MultiInstanceCommandClass)node.getCommandClass(MultiInstanceCommandClass.ID);
+                if (micc != null) {
+                    logger.debug("Found Z-Wave device with {} endpoints", micc.getEndpoints().size());
+                    for (ZWaveMultiChannelEndpoint ep : micc.getEndpoints()) {
+                        switch (ep.getGenericDeviceClass()) {
+                            case ZWaveMultiChannelEndpoint.BINARY_SWITCH:
+                                createZWaveDevice(SwitchDevice.class, ep, null, null, ep.getNumber(), micc);
+                                break;
+                            case ZWaveMultiChannelEndpoint.MULTI_LEVEL_SWITCH:
+                                createZWaveDevice(DimmerDevice.class, ep, null, null, ep.getNumber(), micc);
+                                break;
+                            default:
+                                logger.warn("Unsupported Z-Wave endpoint found: " + ep);
+                                break;
+                        }
                     }
                 }
             }
@@ -260,7 +269,6 @@ public class ZWavePlugin extends AbstractHobsonPlugin implements StateContext, Z
             // allow device to update it's initial state
             ZWaveEndpoint endpoint = null;
             if (device.isEndpoint()) {
-                micc = (MultiInstanceCommandClass)node.getCommandClass(MultiInstanceCommandClass.ID);
                 if (micc != null) {
                     endpoint = micc.getEndpoint(device.getEndpointNumber());
                 }
